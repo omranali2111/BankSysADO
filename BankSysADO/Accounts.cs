@@ -8,7 +8,7 @@ namespace BankSysADO
 {
     internal class Accounts
     {
-        {
+        
         public int AccountNumber { get; set; }
         public string AccountHolderName { get; set; }
         public decimal Balance { get; set; }
@@ -20,4 +20,4 @@ namespace BankSysADO
         public Users User { get; set; }
     }
 }
-}
+

@@ -145,6 +145,7 @@ namespace BankSysADO
                         accountOperation.Withdraw(currentUser.UserId);
                         break;
                     case "2":
+                        accountOperation.Deposit(currentUser.UserId);
 
                         break;
                     case "3":

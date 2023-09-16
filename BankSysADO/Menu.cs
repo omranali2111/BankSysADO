@@ -10,6 +10,7 @@ namespace BankSysADO
     {
         private UserRegistration userRegistration;
         private ExchangeRateService exchangeRateService;
+        private AccountOperation accountOperation;
         private Users currentUser;
         bool loginSuccessful;
 
@@ -84,7 +85,35 @@ namespace BankSysADO
 
         private void AccountMenu()
         {
-            // Implement your account-related menu here
+            bool exitAccountMenu = false;
+
+            while (!exitAccountMenu)
+            {
+                Console.Clear();
+                Console.WriteLine("Account Menu:");
+                Console.WriteLine("1. Create Account");
+                Console.WriteLine("2. View Account");
+                Console.WriteLine("3. Back to Main Menu");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        accountOperation.AddAccount();
+                        break;
+                    case "2":
+                        accountOperation.ViewAccountsForUser(currentUser.UserId);
+                        break;
+                    case "3":
+                        exitAccountMenu = true;
+                        Console.WriteLine("Returning to Main Menu.");
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
+            }
         }
     }
 }

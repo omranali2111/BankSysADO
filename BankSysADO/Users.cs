@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 
 namespace BankSysADO
 {
-    internal class Users
-    {
-       
-        public int UserId { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string HashedPassword { get; set; }
-    }
-}
+   
+        public class Users
+        {
+            public int UserId { get; set; }
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string HashedPassword { get; set; }
+            
+        }
 
+    
+}

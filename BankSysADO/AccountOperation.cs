@@ -10,13 +10,13 @@ namespace BankSysADO
 {
     internal class AccountOperation
     {
-        public void AddAccount()
+        public void AddAccount(int userId)
         {
             Console.WriteLine("Enter Account Holder's Name: ");
             string accountHolderName = Console.ReadLine();
 
             Console.WriteLine("Enter Current Balance: ");
-            if (double.TryParse(Console.ReadLine(), out double currentBalance))
+            if (decimal.TryParse(Console.ReadLine(), out decimal currentBalance))
             {
                 string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
 
@@ -27,13 +27,14 @@ namespace BankSysADO
                         sqlConnection.Open();
 
                         // Define the SQL INSERT query with parameter placeholders
-                        string insertQuery = "INSERT INTO dbo.Accounts (AccountHolderName, CurrentBalance) VALUES (@name, @balance)";
+                        string insertQuery = "INSERT INTO dbo.Accounts (AccountHolderName, Balance, UserId) VALUES (@name, @balance, @userId)";
 
                         // Create and configure SqlCommand with parameters
                         using (SqlCommand sqlCommand = new SqlCommand(insertQuery, sqlConnection))
                         {
                             sqlCommand.Parameters.AddWithValue("@name", accountHolderName);
                             sqlCommand.Parameters.AddWithValue("@balance", currentBalance);
+                            sqlCommand.Parameters.AddWithValue("@userId", userId); // Associate the account with the logged-in user
 
                             // Execute the query
                             sqlCommand.ExecuteNonQuery();
@@ -61,6 +62,7 @@ namespace BankSysADO
             }
         }
 
+
         public void ViewAccountsForUser(int userId)
         {
             string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
@@ -72,7 +74,7 @@ namespace BankSysADO
                     sqlConnection.Open();
 
                     // Define the SQL SELECT query to fetch accounts for the user
-                    string selectQuery = "SELECT AccountNumber, AccountHolderName, CurrentBalance FROM dbo.Accounts WHERE User_ID = @userId";
+                    string selectQuery = "SELECT AccountNumber, AccountHolderName, Balance FROM dbo.Accounts WHERE UserID = @userId";
 
                     // Create and configure SqlCommand with parameters
                     using (SqlCommand sqlCommand = new SqlCommand(selectQuery, sqlConnection))
@@ -113,6 +115,9 @@ namespace BankSysADO
                 catch (Exception e)
                 {
                     Console.WriteLine("An error occurred: " + e.Message);
+                    Console.WriteLine("---------------------------");
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ReadKey();
                 }
             }
         }

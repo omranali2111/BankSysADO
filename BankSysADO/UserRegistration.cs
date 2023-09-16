@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using static Regx.Builder.RegexElement;
 
 namespace BankSysADO
 {
@@ -96,23 +97,33 @@ namespace BankSysADO
             {
                 connection.Open();
 
-                string selectQuery = "SELECT COUNT(*) FROM Users WHERE Email = @Email AND HashedPassword = @Password";
+                string selectQuery = "SELECT * FROM Users WHERE Email = @Email AND HashedPassword = @Password";
 
                 using (SqlCommand command = new SqlCommand(selectQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Email", email);
                     command.Parameters.AddWithValue("@Password", password);
 
-                    int userCount = (int)command.ExecuteScalar();
+                    SqlDataReader reader = command.ExecuteReader();
 
-                    if (userCount > 0)
+                    if (reader.Read())
                     {
+                        //single - user login
+                        currentUser = null;
+                        // User exists, set currentUser to the user's information
+                        currentUser = new Users
+                        {
+                            UserId = (int)reader["UserId"],
+                            Name = reader["Name"].ToString(),
+                            Email = reader["Email"].ToString(),
+                            
+                        };
+
                         Console.WriteLine("Login successful!");
                         Console.WriteLine("---------------------------");
                         Console.WriteLine("Press any key to continue...");
                         Console.ReadKey();
                         return true; // User exists, login successful
-                       
                     }
                     else
                     {
@@ -121,13 +132,13 @@ namespace BankSysADO
                         Console.WriteLine("Press any key to continue...");
                         Console.ReadKey();
                         return false; // Email or password is incorrect
-
                     }
                 }
             }
         }
 
-      
+
+
 
 
         public Users GetCurrentUser()

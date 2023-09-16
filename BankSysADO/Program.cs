@@ -4,12 +4,14 @@ internal class Program
 {
     public static async Task Main(string[] args)
     {
-        UserRegistration userRegistration = new UserRegistration();
-       ExchangeRateService exchangeRateService = new ExchangeRateService(); // Create an instance of ExchangeRateService
+        var userRegistration = new UserRegistration();
+        var exchangeRateService = new ExchangeRateService();
+        var accountOperation = new AccountOperation(); 
 
-        Menu menu = new Menu(userRegistration, exchangeRateService); // Pass the ExchangeRateService instance as an argument
-         await menu.Start();
+        var menu = new Menu(userRegistration, exchangeRateService, accountOperation);
 
-       
+        menu.Start().Wait();
+
+
     }
 }

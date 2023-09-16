@@ -18,11 +18,14 @@ namespace BankSysADO
         {
         }
 
-        public Menu(UserRegistration userRegistration, ExchangeRateService exchangeRateService)
+        public Menu(UserRegistration userRegistration, ExchangeRateService exchangeRateService, AccountOperation accountOperation)
         {
             this.userRegistration = userRegistration;
-            this.exchangeRateService = exchangeRateService; // Initialize the exchangeRateService
+            this.exchangeRateService = exchangeRateService;
+            this.accountOperation = accountOperation; 
         }
+
+
 
         public async Task Start()
         {
@@ -100,7 +103,7 @@ namespace BankSysADO
                 switch (choice)
                 {
                     case "1":
-                        accountOperation.AddAccount();
+                        accountOperation.AddAccount(currentUser.UserId);
                         break;
                     case "2":
                         accountOperation.ViewAccountsForUser(currentUser.UserId);

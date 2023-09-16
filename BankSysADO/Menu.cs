@@ -97,7 +97,8 @@ namespace BankSysADO
                 Console.WriteLine("1. Create Account");
                 Console.WriteLine("2. View Account");
                 Console.WriteLine("3. Make a new transaction");
-                Console.WriteLine("4. Back to Main Menu");
+                Console.WriteLine("4. View Transaction History"); 
+                Console.WriteLine("5. Back to Main Menu");
 
                 string choice = Console.ReadLine();
 
@@ -113,6 +114,9 @@ namespace BankSysADO
                         TransactionMenu(); 
                         break;
                     case "4":
+                        ViewTransactionHistoryMenu(); 
+                        break;
+                    case "5":
                         exitAccountMenu = true;
                         Console.WriteLine("Returning to Main Menu.");
                         break;
@@ -124,6 +128,57 @@ namespace BankSysADO
 
            
         }
+        private void ViewTransactionHistoryMenu()
+        {
+            Console.WriteLine("View Transaction History:");
+            Console.WriteLine("1. Last transaction");
+            Console.WriteLine("2. Last day");
+            Console.WriteLine("3. Last 5 days");
+            Console.WriteLine("4. Last 1 month");
+            Console.WriteLine("5. Last 2 months");
+            Console.WriteLine("6. All");
+            Console.WriteLine("7. Back to Account Menu");
+
+            Console.WriteLine("Enter the number corresponding to the desired period or option: ");
+            if (int.TryParse(Console.ReadLine(), out int choice))
+            {
+                string period;
+                switch (choice)
+                {
+                    case 1:
+                        period = "last transaction";
+                        break;
+                    case 2:
+                        period = "last day";
+                        break;
+                    case 3:
+                        period = "last 5 days";
+                        break;
+                    case 4:
+                        period = "last 1 month";
+                        break;
+                    case 5:
+                        period = "last 2 months";
+                        break;
+                    case 6:
+                        period = "all";
+                        break;
+                    case 7:
+                        Console.WriteLine("Returning to Account Menu.");
+                        return; // Exit the method
+                    default:
+                        period = "all";
+                        break;
+                }
+                accountOperation.ViewTransactionHistory(currentUser.UserId, period);
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a valid number.");
+            }
+        }
+
+
         private void TransactionMenu()
         {
             bool exitTransactionMenu = false;

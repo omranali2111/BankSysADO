@@ -499,6 +499,107 @@ namespace BankSysADO
             }
 
         }
+        public void ViewTransactionHistory(int userId, string period)
+        {
+            DateTime startDate;
+
+            switch (period.ToLower())
+            {
+                case "last transaction":
+                    startDate = DateTime.MinValue; // To retrieve all transactions
+                    break;
+                case "last day":
+                    startDate = DateTime.Now.AddDays(-1);
+                    break;
+                case "last 5 days":
+                    startDate = DateTime.Now.AddDays(-5);
+                    break;
+                case "last 1 month":
+                    startDate = DateTime.Now.AddMonths(-1);
+                    break;
+                case "last 2 months":
+                    startDate = DateTime.Now.AddMonths(-2);
+                    break;
+                default:
+                    Console.WriteLine("Invalid period. Showing all transactions.");
+                    startDate = DateTime.MinValue; // To retrieve all transactions
+                    break;
+            }
+
+            string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
+
+            using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    sqlConnection.Open();
+
+                    // Define the SQL SELECT query to fetch transaction history for the user's accounts within the specified period
+                    string selectQuery = "SELECT TransId, Timestamp, Type, Amount, SrcAccNO, TargetAccNO FROM dbo.Transactions " +
+                        "WHERE (SrcAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId) " +
+                        "OR TargetAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId)) " +
+                        "AND Timestamp >= @startDate " +
+                        "ORDER BY Timestamp DESC";
+
+                    // Create and configure SqlCommand with parameters
+                    using (SqlCommand sqlCommand = new SqlCommand(selectQuery, sqlConnection))
+                    {
+                        sqlCommand.Parameters.AddWithValue("@userId", userId);
+                        sqlCommand.Parameters.AddWithValue("@startDate", startDate);
+
+                        // Execute the query and read the results
+                        using (SqlDataReader reader = sqlCommand.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                Console.WriteLine($"Transaction History (Last {period}):");
+                                while (reader.Read())
+                                {
+                                    int transId = reader.GetInt32(0);
+                                    DateTime timestamp = reader.GetDateTime(1);
+                                    string type = reader.GetString(2);
+                                    decimal amount = reader.GetDecimal(3);
+                                    int? srcAccountNumber = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4);
+                                    int? targetAccountNumber = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5);
+
+                                    Console.WriteLine($"Transaction ID: {transId}");
+                                    Console.WriteLine($"Timestamp: {timestamp}");
+                                    Console.WriteLine($"Type: {type}");
+                                    Console.WriteLine($"Amount: {amount} OMR");
+
+                                    if (srcAccountNumber.HasValue)
+                                    {
+                                        Console.WriteLine($"Source Account: {srcAccountNumber}");
+                                    }
+
+                                    if (targetAccountNumber.HasValue)
+                                    {
+                                        Console.WriteLine($"Target Account: {targetAccountNumber}");
+                                    }
+
+                                    Console.WriteLine("---------------------------");
+                                }
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            }
+                            else
+                            {
+                                Console.WriteLine($"No transaction history found for the last {period}.");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred: " + e.Message);
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ReadKey();
+                }
+            }
+        }
+
     }
 }
                                                                         

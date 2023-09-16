@@ -170,6 +170,7 @@ namespace BankSysADO
                                             if (rowsAffected > 0)
                                             {
                                                 Console.WriteLine("Withdrawal successful!");
+                                                RecordTransaction("Withdrawal", withdrawalAmount, accountNumber, null);
                                             }
                                             else
                                             {
@@ -215,7 +216,7 @@ namespace BankSysADO
             ViewAccountsForUser(userId);
             Console.WriteLine("Enter the Account Number to which you want to deposit: ");
 
-            if (int.TryParse(Console.ReadLine(), out int accountNumber))
+            if (int.TryParse(Console.ReadLine(), out int AccountNumber))
             {
                 Console.WriteLine("Enter the amount to deposit: ");
 
@@ -234,7 +235,7 @@ namespace BankSysADO
 
                             using (SqlCommand checkAccountCommand = new SqlCommand(checkAccountQuery, sqlConnection))
                             {
-                                checkAccountCommand.Parameters.AddWithValue("@accountNumber", accountNumber);
+                                checkAccountCommand.Parameters.AddWithValue("@accountNumber", AccountNumber);
                                 checkAccountCommand.Parameters.AddWithValue("@userId", userId);
 
                                 object balanceResult = checkAccountCommand.ExecuteScalar();
@@ -250,13 +251,14 @@ namespace BankSysADO
                                     {
                                         decimal newBalance = currentBalance + depositAmount;
                                         updateBalanceCommand.Parameters.AddWithValue("@newBalance", newBalance);
-                                        updateBalanceCommand.Parameters.AddWithValue("@accountNumber", accountNumber);
+                                        updateBalanceCommand.Parameters.AddWithValue("@accountNumber", AccountNumber);
 
                                         int rowsAffected = updateBalanceCommand.ExecuteNonQuery();
 
                                         if (rowsAffected > 0)
                                         {
                                             Console.WriteLine("Deposit successful!");
+                                            RecordTransaction("Deposit", depositAmount, null, AccountNumber);
                                         }
                                         else
                                         {
@@ -390,6 +392,7 @@ namespace BankSysADO
                                                                             if (targetRowsAffected > 0)
                                                                             {
                                                                                 Console.WriteLine("Transfer successful!");
+                                                                                RecordTransaction("Transfer", transferAmount, sourceAccountNumber, targetAccountNumber);
                                                                             }
                                                                             else
                                                                             {
@@ -456,8 +459,46 @@ namespace BankSysADO
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
         }
+        private void RecordTransaction(string transactionType, decimal amount, int? sourceAccountNumber, int? targetAccountNumber)
+        {
+            string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
 
+            using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    sqlConnection.Open();
 
+                    string insertTransactionQuery = "INSERT INTO dbo.Transactions (Timestamp, Type, Amount, SrcAccNO, TargetAccNO) " +
+                        "VALUES (@timestamp, @type, @amount, @srcAccount, @targetAccount)";
+
+                    using (SqlCommand insertTransactionCommand = new SqlCommand(insertTransactionQuery, sqlConnection))
+                    {
+                        insertTransactionCommand.Parameters.AddWithValue("@timestamp", DateTime.Now);
+                        insertTransactionCommand.Parameters.AddWithValue("@type", transactionType);
+                        insertTransactionCommand.Parameters.AddWithValue("@amount", amount);
+                        insertTransactionCommand.Parameters.AddWithValue("@srcAccount", sourceAccountNumber ?? (object)DBNull.Value);
+                        insertTransactionCommand.Parameters.AddWithValue("@targetAccount", targetAccountNumber ?? (object)DBNull.Value);
+
+                        int rowsAffected = insertTransactionCommand.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            Console.WriteLine("Transaction recorded successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to record the transaction.");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred while recording the transaction: " + e.Message);
+                }
+            }
+
+        }
     }
 }
                                                                         

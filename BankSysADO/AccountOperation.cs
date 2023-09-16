@@ -38,17 +38,26 @@ namespace BankSysADO
                             // Execute the query
                             sqlCommand.ExecuteNonQuery();
                             Console.WriteLine("Account added successfully!");
+                            Console.WriteLine("---------------------------");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
                         }
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine("An error occurred: " + e.Message);
+                        Console.WriteLine("---------------------------");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                     }
                 }
             }
             else
             {
                 Console.WriteLine("Invalid input for Current Balance.");
+                Console.WriteLine("---------------------------");
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
             }
         }
 
@@ -86,11 +95,17 @@ namespace BankSysADO
                                     Console.WriteLine($"Account Holder: {accountHolderName}");
                                     Console.WriteLine($"Current Balance: {currentBalance:C}");
                                     Console.WriteLine("---------------------------");
+                                    Console.WriteLine("---------------------------");
+                                    Console.WriteLine("Press any key to continue...");
+                                    Console.ReadKey();
                                 }
                             }
                             else
                             {
                                 Console.WriteLine("No accounts found for this user.");
+                                Console.WriteLine("---------------------------");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
                             }
                         }
                     }

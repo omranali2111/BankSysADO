@@ -46,11 +46,17 @@ namespace BankSysADO
                             sqlCommand.Parameters.AddWithValue("@email", email);
                             sqlCommand.Parameters.AddWithValue("@hashed", password);
                             Console.WriteLine("Registration successful!");
+                            Console.WriteLine("---------------------------");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
 
                         }
                         else
                         {
                             Console.WriteLine("Password is invalid.");
+                            Console.WriteLine("---------------------------");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
                         }
 
 
@@ -102,12 +108,20 @@ namespace BankSysADO
                     if (userCount > 0)
                     {
                         Console.WriteLine("Login successful!");
+                        Console.WriteLine("---------------------------");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                         return true; // User exists, login successful
+                       
                     }
                     else
                     {
                         Console.WriteLine("Login failed. Check your email and password.");
+                        Console.WriteLine("---------------------------");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                         return false; // Email or password is incorrect
+
                     }
                 }
             }

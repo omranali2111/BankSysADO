@@ -84,6 +84,88 @@ namespace BankSysADO
             Console.ReadKey();
         }
 
+        public async Task ConvertCurrency()
+        {
+            string jsonData = await GetExchangeRateJsonAsync();
+
+            if (jsonData != null)
+            {
+                try
+                {
+                    ExchangeRateData exchangeData = JsonConvert.DeserializeObject<ExchangeRateData>(jsonData);
+                    if (exchangeData.Result == "success")
+                    {
+                        string baseCurrency = exchangeData.BaseCode;
+                        var conversionRates = exchangeData.ConversionRates;
+
+                        Console.WriteLine("Available Currencies:");
+                        foreach (var rate in conversionRates)
+                        {
+                            string currencyCode = rate.Key;
+                            double exchangeRate = rate.Value;
+                            string currencyName = CurrencyInfo.CurrencyCodeToName.ContainsKey(currencyCode) ? CurrencyInfo.CurrencyCodeToName[currencyCode] : "Unknown";
+
+                            Console.WriteLine($"{currencyName} ({currencyCode})");
+                        }
+
+                        Console.Write("Enter the base currency code: ");
+                        string baseCurrencyCode = Console.ReadLine().ToUpper();
+
+                        if (!conversionRates.ContainsKey(baseCurrencyCode))
+                        {
+                            Console.WriteLine("Invalid base currency code.");
+                            return;
+                        }
+
+                        Console.Write("Enter the target currency code: ");
+                        string targetCurrencyCode = Console.ReadLine().ToUpper();
+
+                        if (!conversionRates.ContainsKey(targetCurrencyCode))
+                        {
+                            Console.WriteLine("Invalid target currency code.");
+                            return;
+                        }
+
+                        Console.Write("Enter the amount to convert: ");
+                        if (double.TryParse(Console.ReadLine(), out double amountToConvert))
+                        {
+                            if (baseCurrencyCode == targetCurrencyCode)
+                            {
+                                Console.WriteLine("Base currency and target currency are the same. No conversion needed.");
+                            }
+                            else
+                            {
+                                double exchangeRate = conversionRates[targetCurrencyCode] / conversionRates[baseCurrencyCode];
+                                double convertedAmount = amountToConvert * exchangeRate;
+
+                                Console.WriteLine($"{amountToConvert} {baseCurrencyCode} is equal to {convertedAmount} {targetCurrencyCode}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid amount.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to retrieve exchange rate data.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deserializing JSON: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Failed to fetch JSON data from the API.");
+            }
+
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+        }
+
+
 
     }
 }

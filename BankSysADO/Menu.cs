@@ -34,8 +34,9 @@ namespace BankSysADO
                 Console.WriteLine("Bank System Menu:");
                 Console.WriteLine("1. Register");
                 Console.WriteLine("2. Login");
-                Console.WriteLine("3. View Exchange Rates"); // New option to view exchange rates
-                Console.WriteLine("4. Exit");
+                Console.WriteLine("3. View Exchange Rates");
+                Console.WriteLine("4. Convert Currency"); 
+                Console.WriteLine("5. Exit");
 
                 string choice = Console.ReadLine();
 
@@ -66,8 +67,11 @@ namespace BankSysADO
                         await exchangeRateService.ViewExchangeRateData();
                       
                         break;
-                        
+
                     case "4":
+                        await exchangeRateService.ConvertCurrency(); 
+                        break;
+                    case "5":
                         exit = true;
                         Console.WriteLine("Exiting the application. Goodbye!");
                         break;

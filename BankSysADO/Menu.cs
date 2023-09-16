@@ -96,7 +96,8 @@ namespace BankSysADO
                 Console.WriteLine("Account Menu:");
                 Console.WriteLine("1. Create Account");
                 Console.WriteLine("2. View Account");
-                Console.WriteLine("3. Back to Main Menu");
+                Console.WriteLine("3. Make a new transaction");
+                Console.WriteLine("4. Back to Main Menu");
 
                 string choice = Console.ReadLine();
 
@@ -109,8 +110,49 @@ namespace BankSysADO
                         accountOperation.ViewAccountsForUser(currentUser.UserId);
                         break;
                     case "3":
+                        TransactionMenu(); 
+                        break;
+                    case "4":
                         exitAccountMenu = true;
                         Console.WriteLine("Returning to Main Menu.");
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
+            }
+
+           
+        }
+        private void TransactionMenu()
+        {
+            bool exitTransactionMenu = false;
+
+            while (!exitTransactionMenu)
+            {
+                Console.Clear();
+                Console.WriteLine("Transaction Menu:");
+                Console.WriteLine("1. Withdraw");
+                Console.WriteLine("2. Deposit");
+                Console.WriteLine("3. Transfer");
+                Console.WriteLine("4. Back to Account Menu");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        accountOperation.Withdraw(currentUser.UserId);
+                        break;
+                    case "2":
+
+                        break;
+                    case "3":
+
+                        break;
+                    case "4":
+                        exitTransactionMenu = true;
+                        Console.WriteLine("Returning to Account Menu.");
                         break;
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");

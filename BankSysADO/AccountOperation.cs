@@ -95,12 +95,13 @@ namespace BankSysADO
 
                                     Console.WriteLine($"Account Number: {accountNumber}");
                                     Console.WriteLine($"Account Holder: {accountHolderName}");
-                                    Console.WriteLine($"Current Balance: {currentBalance:C}");
+                                    Console.WriteLine($"Current Balance: {currentBalance} OMR");
                                     Console.WriteLine("---------------------------");
-                                    Console.WriteLine("---------------------------");
-                                    Console.WriteLine("Press any key to continue...");
-                                    Console.ReadKey();
+                                   
                                 }
+                                Console.WriteLine("---------------------------");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
                             }
                             else
                             {
@@ -120,6 +121,92 @@ namespace BankSysADO
                     Console.ReadKey();
                 }
             }
+        }
+        public void Withdraw(int userId)
+        {
+            // Display the user's accounts and ask for the account number
+            ViewAccountsForUser(userId);
+            Console.WriteLine("Enter the Account Number from which you want to withdraw: ");
+            if (int.TryParse(Console.ReadLine(), out int accountNumber))
+            {
+                Console.WriteLine("Enter the amount to withdraw: ");
+                if (decimal.TryParse(Console.ReadLine(), out decimal withdrawalAmount))
+                {
+                    string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
+
+                    using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+                    {
+                        try
+                        {
+                            sqlConnection.Open();
+
+                            // Check if the specified account belongs to the current user
+                            string checkAccountQuery = "SELECT Balance FROM dbo.Accounts WHERE AccountNumber = @accountNumber AND UserId = @userId";
+
+                            using (SqlCommand checkAccountCommand = new SqlCommand(checkAccountQuery, sqlConnection))
+                            {
+                                checkAccountCommand.Parameters.AddWithValue("@accountNumber", accountNumber);
+                                checkAccountCommand.Parameters.AddWithValue("@userId", userId);
+
+                                object balanceResult = checkAccountCommand.ExecuteScalar();
+
+                                if (balanceResult != null)
+                                {
+                                    decimal currentBalance = (decimal)balanceResult;
+
+                                    if (currentBalance >= withdrawalAmount)
+                                    {
+                                        // Update the balance with the new amount after withdrawal
+                                        string updateBalanceQuery = "UPDATE dbo.Accounts SET Balance = @newBalance WHERE AccountNumber = @accountNumber";
+
+                                        using (SqlCommand updateBalanceCommand = new SqlCommand(updateBalanceQuery, sqlConnection))
+                                        {
+                                            decimal newBalance = currentBalance - withdrawalAmount;
+                                            updateBalanceCommand.Parameters.AddWithValue("@newBalance", newBalance);
+                                            updateBalanceCommand.Parameters.AddWithValue("@accountNumber", accountNumber);
+
+                                            int rowsAffected = updateBalanceCommand.ExecuteNonQuery();
+
+                                            if (rowsAffected > 0)
+                                            {
+                                                Console.WriteLine("Withdrawal successful!");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("Withdrawal failed. Please try again.");
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Insufficient funds in the selected account.");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("The specified account does not belong to you.");
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("An error occurred: " + e.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input for withdrawal amount.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input for account number.");
+            }
+
+            Console.WriteLine("---------------------------");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
         }
 
     }

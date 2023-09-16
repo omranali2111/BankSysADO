@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
-
+using Newtonsoft.Json;
 
 namespace BankSysADO
 {
@@ -113,62 +113,7 @@ namespace BankSysADO
             }
         }
 
-        public async Task<ExchangeRateData> GetExchangeRatesAsync()
-        {
-            try
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    string apiUrl = "https://v6.exchangerate-api.com/v6/5b36f78c7abd8c6a32db5bf4/latest/OMR";
-
-                    HttpResponseMessage response = await client.GetAsync(apiUrl);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string json = await response.Content.ReadAsStringAsync();
-                        ExchangeRateData data = ExchangeRateData.FromJson(json);
-                        return data;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"HTTP request failed with status code {response.StatusCode}");
-                        return null;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return null;
-            }
-        }
-        public async Task ViewExchangeRates()
-        {
-            // Call the GetExchangeRatesAsync method to fetch exchange rate data
-            ExchangeRateData exchangeRates = await GetExchangeRatesAsync();
-
-            if (exchangeRates != null)
-            {
-                Console.WriteLine($"Base Currency: {exchangeRates.Base}");
-                Console.WriteLine("Exchange Rates:");
-                
-                    Console.WriteLine($"Base Currency: {exchangeRates.Base}");
-                    Console.WriteLine("Exchange Rates:");
-                    Console.WriteLine($"USD: {exchangeRates.Rates.USD}");
-                    Console.WriteLine($"EUR: {exchangeRates.Rates.EUR}");
-                    Console.WriteLine($"GBP: {exchangeRates.Rates.GBP}");
-                    Console.WriteLine($"JPY: {exchangeRates.Rates.JPY}");
-                    Console.WriteLine($"CAD: {exchangeRates.Rates.CAD}");
-               
-            }
-            else
-            {
-                Console.WriteLine("Failed to fetch exchange rate data.");
-            }
-        }
-        
-
-        
+       
 
         public Users GetCurrentUser()
         {

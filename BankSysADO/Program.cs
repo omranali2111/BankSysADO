@@ -2,9 +2,14 @@
 
 internal class Program
 {
-    private static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        UserRegistration s = new UserRegistration();
-        s.GetExchangeRatesAsync();
+        UserRegistration userRegistration = new UserRegistration();
+       ExchangeRateService exchangeRateService = new ExchangeRateService(); // Create an instance of ExchangeRateService
+
+        Menu menu = new Menu(userRegistration, exchangeRateService); // Pass the ExchangeRateService instance as an argument
+         await menu.Start();
+
+       
     }
 }

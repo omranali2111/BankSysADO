@@ -9,14 +9,18 @@ namespace BankSysADO
     internal class Menu
     {
         private UserRegistration userRegistration;
-        //private AccountOperations accountOperations;
+        private ExchangeRateService exchangeRateService;
         private Users currentUser;
         bool loginSuccessful;
 
-        public Menu(UserRegistration userRegistration)
+        public Menu()
+        {
+        }
+
+        public Menu(UserRegistration userRegistration, ExchangeRateService exchangeRateService)
         {
             this.userRegistration = userRegistration;
-          
+            this.exchangeRateService = exchangeRateService; // Initialize the exchangeRateService
         }
 
         public async Task Start()
@@ -59,7 +63,8 @@ namespace BankSysADO
 
                     case "3":
                    
-                        await userRegistration.ViewExchangeRates(); // Call the method asynchronously
+                        await exchangeRateService.ViewExchangeRateData();
+                      
                         break;
                         
                     case "4":

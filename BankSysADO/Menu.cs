@@ -149,6 +149,7 @@ namespace BankSysADO
 
                         break;
                     case "3":
+                        accountOperation.Transfer(currentUser.UserId);
 
                         break;
                     case "4":

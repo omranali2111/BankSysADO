@@ -97,7 +97,7 @@ namespace BankSysADO
                                     Console.WriteLine($"Account Holder: {accountHolderName}");
                                     Console.WriteLine($"Current Balance: {currentBalance} OMR");
                                     Console.WriteLine("---------------------------");
-                                   
+
                                 }
                                 Console.WriteLine("---------------------------");
                                 Console.WriteLine("Press any key to continue...");
@@ -291,6 +291,173 @@ namespace BankSysADO
             Console.ReadKey();
         }
 
+        public void Transfer(int userId)
+        {
+            // Display the user's accounts and ask for the source account number
+            Console.WriteLine("Transfer Money");
+            Console.WriteLine("Your Accounts:");
+            ViewAccountsForUser(userId);
+
+            Console.WriteLine("Enter the Account Number to transfer money from: ");
+
+            if (int.TryParse(Console.ReadLine(), out int sourceAccountNumber))
+            {
+                Console.WriteLine("Enter the target Account Number to transfer money to: ");
+
+                if (int.TryParse(Console.ReadLine(), out int targetAccountNumber))
+                {
+                    Console.WriteLine("Enter the amount to transfer: ");
+
+                    if (decimal.TryParse(Console.ReadLine(), out decimal transferAmount))
+                    {
+                        string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
+
+                        using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+                        {
+                            try
+                            {
+                                sqlConnection.Open();
+
+                                // Check if the source account belongs to the current user
+                                string checkSourceAccountQuery = "SELECT Balance FROM dbo.Accounts WHERE AccountNumber = @sourceAccountNumber AND UserId = @userId";
+
+                                using (SqlCommand checkSourceAccountCommand = new SqlCommand(checkSourceAccountQuery, sqlConnection))
+                                {
+                                    checkSourceAccountCommand.Parameters.AddWithValue("@sourceAccountNumber", sourceAccountNumber);
+                                    checkSourceAccountCommand.Parameters.AddWithValue("@userId", userId);
+
+                                    object sourceBalanceResult = checkSourceAccountCommand.ExecuteScalar();
+
+                                    if (sourceBalanceResult != null)
+                                    {
+                                        decimal sourceCurrentBalance = (decimal)sourceBalanceResult;
+
+                                        if (sourceCurrentBalance >= transferAmount)
+                                        {
+                                            // Update the source account balance with the new amount after transfer
+                                            string updateSourceBalanceQuery = "UPDATE dbo.Accounts SET Balance = @newSourceBalance WHERE AccountNumber = @sourceAccountNumber";
+
+                                            using (SqlCommand updateSourceBalanceCommand = new SqlCommand(updateSourceBalanceQuery, sqlConnection))
+                                            {
+                                                decimal newSourceBalance = sourceCurrentBalance - transferAmount;
+                                                updateSourceBalanceCommand.Parameters.AddWithValue("@newSourceBalance", newSourceBalance);
+                                                updateSourceBalanceCommand.Parameters.AddWithValue("@sourceAccountNumber", sourceAccountNumber);
+
+                                                int sourceRowsAffected = updateSourceBalanceCommand.ExecuteNonQuery();
+
+                                                if (sourceRowsAffected > 0)
+                                                {
+                                                    // Check if the target account belongs to the current user or another user
+                                                    string checkTargetAccountQuery = "SELECT UserId FROM dbo.Accounts WHERE AccountNumber = @targetAccountNumber";
+
+                                                    using (SqlCommand checkTargetAccountCommand = new SqlCommand(checkTargetAccountQuery, sqlConnection))
+                                                    {
+                                                        checkTargetAccountCommand.Parameters.AddWithValue("@targetAccountNumber", targetAccountNumber);
+
+                                                        object targetUserIdResult = checkTargetAccountCommand.ExecuteScalar();
+
+                                                        if (targetUserIdResult != null)
+                                                        {
+                                                            int targetUserId = (int)targetUserIdResult;
+
+                                                            // Check if the target account belongs to the current user or another user
+                                                            if (targetUserId == userId)
+                                                            {
+                                                                // Transfer to own account
+                                                                string updateTargetBalanceQuery = "UPDATE dbo.Accounts SET Balance = @newTargetBalance WHERE AccountNumber = @targetAccountNumber";
+
+                                                                using (SqlCommand updateTargetBalanceCommand = new SqlCommand(updateTargetBalanceQuery, sqlConnection))
+                                                                {
+                                                                    // Get the current balance of the target account
+                                                                    string getCurrentTargetBalanceQuery = "SELECT Balance FROM dbo.Accounts WHERE AccountNumber = @targetAccountNumber";
+
+                                                                    using (SqlCommand getCurrentTargetBalanceCommand = new SqlCommand(getCurrentTargetBalanceQuery, sqlConnection))
+                                                                    {
+                                                                        getCurrentTargetBalanceCommand.Parameters.AddWithValue("@targetAccountNumber", targetAccountNumber);
+                                                                        object targetBalanceResult = getCurrentTargetBalanceCommand.ExecuteScalar();
+
+                                                                        if (targetBalanceResult != null)
+                                                                        {
+                                                                            decimal targetCurrentBalance = (decimal)targetBalanceResult;
+
+                                                                            // Update the target account balance with the new amount after transfer
+                                                                            decimal newTargetBalance = targetCurrentBalance + transferAmount;
+                                                                            updateTargetBalanceCommand.Parameters.AddWithValue("@newTargetBalance", newTargetBalance);
+                                                                            updateTargetBalanceCommand.Parameters.AddWithValue("@targetAccountNumber", targetAccountNumber);
+
+                                                                            int targetRowsAffected = updateTargetBalanceCommand.ExecuteNonQuery();
+
+                                                                            if (targetRowsAffected > 0)
+                                                                            {
+                                                                                Console.WriteLine("Transfer successful!");
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                Console.WriteLine("Transfer to target account failed. Please try again.");
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            Console.WriteLine("Target account not found.");
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                Console.WriteLine("You can only transfer to your own accounts.");
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.WriteLine("Target account not found.");
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("Transfer from source account failed. Please try again.");
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Insufficient funds in the source account.");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("The specified source account does not belong to you.");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("An error occurred: " + e.Message);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input for transfer amount.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input for target account number.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input for source account number.");
+            }
+
+            Console.WriteLine("---------------------------");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+        }
+
 
     }
 }
+                                                                        

@@ -501,12 +501,13 @@ namespace BankSysADO
         }
         public void ViewTransactionHistory(int userId, string period)
         {
+            DateTime minSqlDate = new DateTime(1753, 1, 1);
             DateTime startDate;
 
             switch (period.ToLower())
             {
                 case "last transaction":
-                    startDate = DateTime.MinValue; // To retrieve all transactions
+                    startDate = minSqlDate; // Set to minimum date
                     break;
                 case "last day":
                     startDate = DateTime.Now.AddDays(-1);
@@ -522,8 +523,9 @@ namespace BankSysADO
                     break;
                 default:
                     Console.WriteLine("Invalid period. Showing all transactions.");
-                    startDate = DateTime.MinValue; // To retrieve all transactions
+                    startDate = minSqlDate; // Set to minimum date
                     break;
+            
             }
 
             string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
@@ -584,7 +586,7 @@ namespace BankSysADO
                             }
                             else
                             {
-                                Console.WriteLine($"No transaction history found for the last {period}.");
+                                Console.WriteLine("No transaction history found.");
                                 Console.WriteLine("Press any key to continue...");
                                 Console.ReadKey();
                             }
@@ -600,6 +602,144 @@ namespace BankSysADO
             }
         }
 
+        public void DeleteUser(int userId)
+        {
+            string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
+
+            using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    sqlConnection.Open();
+
+                    // Delete related data first (e.g., transactions and accounts)
+                    string deleteTransactionsQuery = "DELETE FROM dbo.Transactions WHERE SrcAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId) OR TargetAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId)";
+                    string deleteAccountsQuery = "DELETE FROM dbo.Accounts WHERE UserId = @userId";
+                    string deleteUserQuery = "DELETE FROM dbo.Users WHERE UserId = @userId";
+
+                    using (SqlCommand deleteTransactionsCommand = new SqlCommand(deleteTransactionsQuery, sqlConnection))
+                    using (SqlCommand deleteAccountsCommand = new SqlCommand(deleteAccountsQuery, sqlConnection))
+                    using (SqlCommand deleteUserCommand = new SqlCommand(deleteUserQuery, sqlConnection))
+                    {
+                        deleteTransactionsCommand.Parameters.AddWithValue("@userId", userId);
+                        deleteAccountsCommand.Parameters.AddWithValue("@userId", userId);
+                        deleteUserCommand.Parameters.AddWithValue("@userId", userId);
+
+                        // Begin a SQL transaction to ensure data consistency
+                        using (SqlTransaction transaction = sqlConnection.BeginTransaction())
+                        {
+                            deleteTransactionsCommand.Transaction = transaction;
+                            deleteAccountsCommand.Transaction = transaction;
+                            deleteUserCommand.Transaction = transaction;
+
+                            try
+                            {
+                                // Delete transactions
+                                deleteTransactionsCommand.ExecuteNonQuery();
+
+                                // Delete accounts
+                                deleteAccountsCommand.ExecuteNonQuery();
+
+                                // Delete the user
+                                deleteUserCommand.ExecuteNonQuery();
+
+                                // Commit the transaction
+                                transaction.Commit();
+
+                                Console.WriteLine("Account deleted successfully.");
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("An error occurred while deleting the account: " + e.Message);
+                                transaction.Rollback();
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred: " + e.Message);
+                }
+            }
+        }
+
+        public void DeleteUserAccount(int userId)
+        {
+            // Display the user's accounts
+            ViewAccountsForUser(userId);
+
+            Console.WriteLine("Enter the Account Number you want to delete: ");
+
+            if (int.TryParse(Console.ReadLine(), out int accountNumberToDelete))
+            {
+                Console.WriteLine("Enter your email: ");
+                string email = Console.ReadLine();
+
+                Console.WriteLine("Enter your password: ");
+                string password = Console.ReadLine();
+
+                string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
+
+                using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+                {
+                    try
+                    {
+                        sqlConnection.Open();
+
+                        // Check if the specified account belongs to the current user
+                        string checkAccountQuery = "SELECT UserId FROM dbo.Accounts WHERE AccountNumber = @accountNumber AND UserId = @userId";
+
+                        using (SqlCommand checkAccountCommand = new SqlCommand(checkAccountQuery, sqlConnection))
+                        {
+                            checkAccountCommand.Parameters.AddWithValue("@accountNumber", accountNumberToDelete);
+                            checkAccountCommand.Parameters.AddWithValue("@userId", userId);
+
+                            object userIdResult = checkAccountCommand.ExecuteScalar();
+
+                            if (userIdResult != null)
+                            {
+                                // The specified account belongs to the current user
+                                // Delete the account
+                                string deleteAccountQuery = "DELETE FROM dbo.Accounts WHERE AccountNumber = @accountNumberToDelete";
+
+                                using (SqlCommand deleteAccountCommand = new SqlCommand(deleteAccountQuery, sqlConnection))
+                                {
+                                    deleteAccountCommand.Parameters.AddWithValue("@accountNumberToDelete", accountNumberToDelete);
+
+                                    int rowsAffected = deleteAccountCommand.ExecuteNonQuery();
+
+                                    if (rowsAffected > 0)
+                                    {
+                                        Console.WriteLine("Account deleted successfully.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Failed to delete the account. Please try again.");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("The specified account does not belong to you.");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("An error occurred: " + e.Message);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input for account number.");
+            }
+        }
+
+
+
+
     }
 }
-                                                                        
+
+

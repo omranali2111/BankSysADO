@@ -97,8 +97,10 @@ namespace BankSysADO
                 Console.WriteLine("1. Create Account");
                 Console.WriteLine("2. View Account");
                 Console.WriteLine("3. Make a new transaction");
-                Console.WriteLine("4. View Transaction History"); 
-                Console.WriteLine("5. Back to Main Menu");
+                Console.WriteLine("4. View Transaction History");
+                Console.WriteLine("5. Delete Account"); 
+                Console.WriteLine("6. Delete User"); 
+                Console.WriteLine("7. Back to Main Menu");
 
                 string choice = Console.ReadLine();
 
@@ -117,6 +119,17 @@ namespace BankSysADO
                         ViewTransactionHistoryMenu(); 
                         break;
                     case "5":
+                       
+                        accountOperation.DeleteUserAccount(currentUser.UserId);
+                        break;
+                    case "6":
+                        
+                        accountOperation.DeleteUser(currentUser.UserId);
+                        Console.WriteLine("User deleted successfully.");
+                        Thread.Sleep(3000);
+                        exitAccountMenu = true; 
+                        break;
+                    case "7":
                         exitAccountMenu = true;
                         Console.WriteLine("Returning to Main Menu.");
                         break;

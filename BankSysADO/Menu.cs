@@ -125,8 +125,6 @@ namespace BankSysADO
                     case "6":
                         
                         accountOperation.DeleteUser(currentUser.UserId);
-                        Console.WriteLine("User deleted successfully.");
-                        Thread.Sleep(3000);
                         exitAccountMenu = true; 
                         break;
                     case "7":

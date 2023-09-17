@@ -665,7 +665,10 @@ namespace BankSysADO
                                         // Commit the transaction
                                         transaction.Commit();
 
-                                        Console.WriteLine("User, accounts, and transactions deleted successfully.");
+                                        Console.WriteLine("User deleted successfully.");
+                                        Console.WriteLine("---------------------------");
+                                        Console.WriteLine("Press any key to continue...");
+                                        Console.ReadKey();
                                     }
                                     catch (Exception e)
                                     {
@@ -678,6 +681,9 @@ namespace BankSysADO
                         else
                         {
                             Console.WriteLine("Invalid email or password. Deletion failed.");
+                            Console.WriteLine("---------------------------");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
                         }
                     }
                 }
@@ -749,22 +755,34 @@ namespace BankSysADO
                                             if (rowsAffected > 0)
                                             {
                                                 Console.WriteLine("Account deleted successfully.");
+                                                Console.WriteLine("---------------------------");
+                                                Console.WriteLine("Press any key to continue...");
+                                                Console.ReadKey();
                                             }
                                             else
                                             {
                                                 Console.WriteLine("Failed to delete the account. Please try again.");
+                                                Console.WriteLine("---------------------------");
+                                                Console.WriteLine("Press any key to continue...");
+                                                Console.ReadKey();
                                             }
                                         }
                                     }
                                     else
                                     {
                                         Console.WriteLine("Invalid email or password. Deletion failed.");
+                                        Console.WriteLine("---------------------------");
+                                        Console.WriteLine("Press any key to continue...");
+                                        Console.ReadKey();
                                     }
                                 }
                             }
                             else
                             {
                                 Console.WriteLine("The specified account does not belong to you.");
+                                Console.WriteLine("---------------------------");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
                             }
                         }
                     }
@@ -777,6 +795,9 @@ namespace BankSysADO
             else
             {
                 Console.WriteLine("Invalid input for account number.");
+                Console.WriteLine("---------------------------");
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
             }
         }
 

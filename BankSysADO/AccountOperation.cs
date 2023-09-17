@@ -86,17 +86,20 @@ namespace BankSysADO
                         {
                             if (reader.HasRows)
                             {
+                                Console.ForegroundColor = ConsoleColor.Magenta;
                                 Console.WriteLine("Accounts for the current user:");
+                                Console.ResetColor();
                                 while (reader.Read())
                                 {
                                     int accountNumber = reader.GetInt32(0);
                                     string accountHolderName = reader.GetString(1);
                                     decimal currentBalance = reader.GetDecimal(2);
-
+                                    Console.ForegroundColor = ConsoleColor.Yellow;
                                     Console.WriteLine($"Account Number: {accountNumber}");
                                     Console.WriteLine($"Account Holder: {accountHolderName}");
                                     Console.WriteLine($"Current Balance: {currentBalance} OMR");
                                     Console.WriteLine("---------------------------");
+                                    Console.ResetColor();
 
                                 }
                                 Console.WriteLine("---------------------------");
@@ -563,11 +566,12 @@ namespace BankSysADO
                                     decimal amount = reader.GetDecimal(3);
                                     int? srcAccountNumber = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4);
                                     int? targetAccountNumber = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5);
-
+                                    Console.ForegroundColor = ConsoleColor.Yellow;
                                     Console.WriteLine($"Transaction ID: {transId}");
                                     Console.WriteLine($"Timestamp: {timestamp}");
                                     Console.WriteLine($"Type: {type}");
                                     Console.WriteLine($"Amount: {amount} OMR");
+                                    Console.ResetColor();
 
                                     if (srcAccountNumber.HasValue)
                                     {

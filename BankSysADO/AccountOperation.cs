@@ -604,6 +604,12 @@ namespace BankSysADO
 
         public void DeleteUser(int userId)
         {
+            Console.WriteLine("Enter your email: ");
+            string email = Console.ReadLine();
+
+            Console.WriteLine("Enter your password: ");
+            string password = Console.ReadLine();
+
             string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
 
             using (SqlConnection sqlConnection = new SqlConnection(connectionString))
@@ -612,47 +618,66 @@ namespace BankSysADO
                 {
                     sqlConnection.Open();
 
-                    // Delete related data first (e.g., transactions and accounts)
-                    string deleteTransactionsQuery = "DELETE FROM dbo.Transactions WHERE SrcAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId) OR TargetAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId)";
-                    string deleteAccountsQuery = "DELETE FROM dbo.Accounts WHERE UserId = @userId";
-                    string deleteUserQuery = "DELETE FROM dbo.Users WHERE UserId = @userId";
+                    // Check if the provided email and password match the user's credentials
+                    string checkCredentialsQuery = "SELECT UserId FROM dbo.Users WHERE UserId = @userId AND Email = @email AND HashedPassword = @password";
 
-                    using (SqlCommand deleteTransactionsCommand = new SqlCommand(deleteTransactionsQuery, sqlConnection))
-                    using (SqlCommand deleteAccountsCommand = new SqlCommand(deleteAccountsQuery, sqlConnection))
-                    using (SqlCommand deleteUserCommand = new SqlCommand(deleteUserQuery, sqlConnection))
+                    using (SqlCommand checkCredentialsCommand = new SqlCommand(checkCredentialsQuery, sqlConnection))
                     {
-                        deleteTransactionsCommand.Parameters.AddWithValue("@userId", userId);
-                        deleteAccountsCommand.Parameters.AddWithValue("@userId", userId);
-                        deleteUserCommand.Parameters.AddWithValue("@userId", userId);
+                        checkCredentialsCommand.Parameters.AddWithValue("@userId", userId);
+                        checkCredentialsCommand.Parameters.AddWithValue("@email", email);
+                        checkCredentialsCommand.Parameters.AddWithValue("@password", password);
 
-                        // Begin a SQL transaction to ensure data consistency
-                        using (SqlTransaction transaction = sqlConnection.BeginTransaction())
+                        object userIdResult = checkCredentialsCommand.ExecuteScalar();
+
+                        if (userIdResult != null)
                         {
-                            deleteTransactionsCommand.Transaction = transaction;
-                            deleteAccountsCommand.Transaction = transaction;
-                            deleteUserCommand.Transaction = transaction;
+                            // User provided correct email and password, delete the user, accounts, and transactions
+                            string deleteTransactionsQuery = "DELETE FROM dbo.Transactions WHERE SrcAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId) OR TargetAccNO IN (SELECT AccountNumber FROM dbo.Accounts WHERE UserId = @userId)";
+                            string deleteAccountsQuery = "DELETE FROM dbo.Accounts WHERE UserId = @userId";
+                            string deleteUserQuery = "DELETE FROM dbo.Users WHERE UserId = @userId";
 
-                            try
+                            using (SqlCommand deleteTransactionsCommand = new SqlCommand(deleteTransactionsQuery, sqlConnection))
+                            using (SqlCommand deleteAccountsCommand = new SqlCommand(deleteAccountsQuery, sqlConnection))
+                            using (SqlCommand deleteUserCommand = new SqlCommand(deleteUserQuery, sqlConnection))
                             {
-                                // Delete transactions
-                                deleteTransactionsCommand.ExecuteNonQuery();
+                                deleteTransactionsCommand.Parameters.AddWithValue("@userId", userId);
+                                deleteAccountsCommand.Parameters.AddWithValue("@userId", userId);
+                                deleteUserCommand.Parameters.AddWithValue("@userId", userId);
 
-                                // Delete accounts
-                                deleteAccountsCommand.ExecuteNonQuery();
+                                // Begin a SQL transaction to ensure data consistency
+                                using (SqlTransaction transaction = sqlConnection.BeginTransaction())
+                                {
+                                    deleteTransactionsCommand.Transaction = transaction;
+                                    deleteAccountsCommand.Transaction = transaction;
+                                    deleteUserCommand.Transaction = transaction;
 
-                                // Delete the user
-                                deleteUserCommand.ExecuteNonQuery();
+                                    try
+                                    {
+                                        // Delete transactions
+                                        deleteTransactionsCommand.ExecuteNonQuery();
 
-                                // Commit the transaction
-                                transaction.Commit();
+                                        // Delete accounts
+                                        deleteAccountsCommand.ExecuteNonQuery();
 
-                                Console.WriteLine("Account deleted successfully.");
+                                        // Delete the user
+                                        deleteUserCommand.ExecuteNonQuery();
+
+                                        // Commit the transaction
+                                        transaction.Commit();
+
+                                        Console.WriteLine("User, accounts, and transactions deleted successfully.");
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine("An error occurred while deleting the user, accounts, and transactions: " + e.Message);
+                                        transaction.Rollback();
+                                    }
+                                }
                             }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine("An error occurred while deleting the account: " + e.Message);
-                                transaction.Rollback();
-                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid email or password. Deletion failed.");
                         }
                     }
                 }
@@ -699,22 +724,41 @@ namespace BankSysADO
                             if (userIdResult != null)
                             {
                                 // The specified account belongs to the current user
-                                // Delete the account
-                                string deleteAccountQuery = "DELETE FROM dbo.Accounts WHERE AccountNumber = @accountNumberToDelete";
+                                // Check if the provided email and password match the user's credentials
+                                string checkCredentialsQuery = "SELECT UserId FROM dbo.Users WHERE UserId = @userId AND Email = @email AND HashedPassword = @password";
 
-                                using (SqlCommand deleteAccountCommand = new SqlCommand(deleteAccountQuery, sqlConnection))
+                                using (SqlCommand checkCredentialsCommand = new SqlCommand(checkCredentialsQuery, sqlConnection))
                                 {
-                                    deleteAccountCommand.Parameters.AddWithValue("@accountNumberToDelete", accountNumberToDelete);
+                                    checkCredentialsCommand.Parameters.AddWithValue("@userId", userId);
+                                    checkCredentialsCommand.Parameters.AddWithValue("@email", email);
+                                    checkCredentialsCommand.Parameters.AddWithValue("@password", password);
 
-                                    int rowsAffected = deleteAccountCommand.ExecuteNonQuery();
+                                    userIdResult = checkCredentialsCommand.ExecuteScalar();
 
-                                    if (rowsAffected > 0)
+                                    if (userIdResult != null)
                                     {
-                                        Console.WriteLine("Account deleted successfully.");
+                                        // User provided correct email and password, delete the account
+                                        string deleteAccountQuery = "DELETE FROM dbo.Accounts WHERE AccountNumber = @accountNumberToDelete";
+
+                                        using (SqlCommand deleteAccountCommand = new SqlCommand(deleteAccountQuery, sqlConnection))
+                                        {
+                                            deleteAccountCommand.Parameters.AddWithValue("@accountNumberToDelete", accountNumberToDelete);
+
+                                            int rowsAffected = deleteAccountCommand.ExecuteNonQuery();
+
+                                            if (rowsAffected > 0)
+                                            {
+                                                Console.WriteLine("Account deleted successfully.");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("Failed to delete the account. Please try again.");
+                                            }
+                                        }
                                     }
                                     else
                                     {
-                                        Console.WriteLine("Failed to delete the account. Please try again.");
+                                        Console.WriteLine("Invalid email or password. Deletion failed.");
                                     }
                                 }
                             }

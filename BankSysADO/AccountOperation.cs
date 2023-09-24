@@ -366,9 +366,8 @@ namespace BankSysADO
                                                             int targetUserId = (int)targetUserIdResult;
 
                                                             // Check if the target account belongs to the current user or another user
-                                                            if (targetUserId == userId)
-                                                            {
-                                                                // Transfer to own account
+                                                            
+                                                                // Transfer 
                                                                 string updateTargetBalanceQuery = "UPDATE dbo.Accounts SET Balance = @newTargetBalance WHERE AccountNumber = @targetAccountNumber";
 
                                                                 using (SqlCommand updateTargetBalanceCommand = new SqlCommand(updateTargetBalanceQuery, sqlConnection))
@@ -408,11 +407,7 @@ namespace BankSysADO
                                                                         }
                                                                     }
                                                                 }
-                                                            }
-                                                            else
-                                                            {
-                                                                Console.WriteLine("You can only transfer to your own accounts.");
-                                                            }
+                                                            
                                                         }
                                                         else
                                                         {
@@ -462,6 +457,7 @@ namespace BankSysADO
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
         }
+ 
         private void RecordTransaction(string transactionType, decimal amount, int? sourceAccountNumber, int? targetAccountNumber)
         {
             string connectionString = "Data Source=(local);Initial Catalog=BankSystem; Integrated Security=true";
